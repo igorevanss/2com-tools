@@ -3,520 +3,908 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2Com — Documentador de Atendimento</title>
+<title>2Com IA — Copiloto de Atendimento</title>
 <style>
-  :root {
-    --bg: #0f1117;
-    --bg2: #1a1d27;
-    --bg3: #22263a;
-    --border: #2e3248;
-    --text: #e8eaf6;
-    --muted: #8b90b8;
-    --accent: #3b82f6;
-    --code: #c9d1d9;
-    --success: #14532d;
-    --success-text: #4ade80;
-    --tip: #1e2235;
-    --tip-border: #5c6ef8;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    font-size: 15px;
-    line-height: 1.6;
-    min-height: 100vh;
-  }
+:root {
+  --bg: #0f1117;
+  --bg2: #1a1d27;
+  --bg3: #22263a;
+  --border: #2e3248;
+  --text: #e8eaf6;
+  --muted: #8b90b8;
+  --accent: #3b82f6;
+  --accent2: #5c6ef8;
+  --success: #22c55e;
+  --warn: #f97316;
+  --danger: #ef4444;
+  --user-bg: #1e3a5f;
+  --ai-bg: #1a1d27;
+  --code-bg: #141720;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
 
-  /* HEADER */
-  header {
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .logo {
-    width: 36px; height: 36px;
-    background: var(--accent);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
-  }
-  header h1 { font-size: 15px; font-weight: 700; }
-  header p { color: var(--muted); font-size: 12px; }
+/* HEADER */
+#header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.logo { font-size: 20px; }
+#header-title { font-weight: 700; font-size: 14px; flex: 1; }
+#header-title span { color: var(--muted); font-weight: 400; font-size: 12px; display: block; }
+#model-badge {
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 20px; color: var(--muted);
+  cursor: pointer; white-space: nowrap;
+}
+#model-badge:hover { border-color: var(--accent); color: var(--accent); }
+#btn-settings {
+  width: 32px; height: 32px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--muted);
+}
+#btn-settings:hover { color: var(--text); border-color: var(--accent); }
 
-  /* MAIN */
-  main { max-width: 760px; margin: 0 auto; padding: 24px 16px; }
+/* QUICK ACTIONS */
+#quick-actions {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 12px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+#quick-actions::-webkit-scrollbar { display: none; }
+.qa-btn {
+  padding: 5px 12px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 20px; font-size: 12px;
+  color: var(--muted); cursor: pointer;
+  white-space: nowrap; transition: all 0.15s;
+}
+.qa-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,0.1); }
 
-  /* API KEY BANNER */
-  #api-banner {
-    background: var(--tip);
-    border: 1px solid var(--tip-border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-bottom: 16px;
-    display: none;
-  }
-  #api-banner.show { display: block; }
-  #api-banner p { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
-  #api-banner a { color: var(--tip-border); }
-  .api-row { display: flex; gap: 8px; }
-  .api-row input {
-    flex: 1; padding: 9px 12px;
-    background: var(--bg3); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text); font-size: 14px;
-  }
-  .api-row button {
-    padding: 9px 16px;
-    background: var(--tip-border); border: none;
-    border-radius: 8px; color: #fff;
-    font-size: 13px; font-weight: 700; cursor: pointer;
-  }
+/* CHAT AREA */
+#chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#chat::-webkit-scrollbar { width: 4px; }
+#chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  /* CARD */
-  .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 14px;
-  }
+/* MESSAGES */
+.msg { display: flex; flex-direction: column; max-width: 90%; }
+.msg.user { align-self: flex-end; align-items: flex-end; }
+.msg.ai { align-self: flex-start; align-items: flex-start; }
+.msg-role { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+.msg-bubble {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  line-height: 1.65;
+  word-break: break-word;
+}
+.msg.user .msg-bubble { background: var(--user-bg); border: 1px solid #1e4080; }
+.msg.ai .msg-bubble { background: var(--ai-bg); border: 1px solid var(--border); }
+.msg-bubble pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #c9d1d9;
+  white-space: pre-wrap;
+}
+.msg-bubble code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #79c0ff;
+}
+.msg-bubble strong { color: #e8eaf6; font-weight: 600; }
+.msg-bubble ul, .msg-bubble ol { padding-left: 18px; margin: 6px 0; }
+.msg-bubble li { margin-bottom: 3px; }
+.msg-bubble p { margin: 4px 0; }
+.msg-actions { display: flex; gap: 6px; margin-top: 5px; }
+.msg-copy {
+  font-size: 11px; padding: 3px 10px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--muted); cursor: pointer;
+}
+.msg-copy:hover { color: var(--text); }
+.msg-copy.ok { background: #14532d; color: #4ade80; border-color: #14532d; }
 
-  label {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 6px;
-  }
-  label .hint {
-    font-size: 11px;
-    font-weight: 400;
-    color: #555e75;
-    text-transform: none;
-    letter-spacing: 0;
-    margin-left: 6px;
-  }
+/* IMAGE IN CHAT */
+.msg-image { max-width: 240px; border-radius: 8px; margin-bottom: 6px; display: block; }
 
-  select, input[type="text"], textarea {
-    width: 100%;
-    padding: 9px 12px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 14px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  select:focus, input:focus, textarea:focus {
-    border-color: var(--accent);
-  }
-  textarea { resize: vertical; line-height: 1.65; }
+/* IMAGE PREVIEW */
+#img-preview-wrap {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 8px 12px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+#img-preview-wrap.show { display: flex; }
+#img-preview { height: 48px; border-radius: 6px; border: 1px solid var(--border); }
+#img-preview-name { font-size: 12px; color: var(--muted); flex: 1; }
+#btn-remove-img {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #4c0519; border: none; color: #f472b6;
+  cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
+}
 
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-  .row3 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px; }
-  .field { margin-bottom: 12px; }
+/* INPUT */
+#input-area {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 10px 12px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+#input-area textarea {
+  flex: 1;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text);
+  font-size: 14px; font-family: inherit;
+  padding: 9px 12px;
+  resize: none; outline: none;
+  max-height: 120px; min-height: 40px;
+  line-height: 1.5;
+  transition: border-color 0.15s;
+}
+#input-area textarea:focus { border-color: var(--accent); }
+#input-area textarea::placeholder { color: var(--muted); }
+.input-btn {
+  width: 38px; height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 10px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0; background: var(--bg3);
+  color: var(--muted); transition: all 0.15s;
+}
+.input-btn:hover { border-color: var(--accent); color: var(--accent); }
+#btn-send {
+  background: var(--accent); border: none;
+  border-radius: 10px; color: #fff;
+  width: 38px; height: 38px;
+  cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: opacity 0.15s;
+}
+#btn-send:disabled { opacity: 0.4; cursor: not-allowed; }
+#file-input { display: none; }
 
-  .hint-text {
-    font-size: 11px; color: #555e75; margin-top: 5px;
-  }
+/* TYPING INDICATOR */
+.typing { display: flex; gap: 5px; padding: 10px 14px; }
+.typing span {
+  width: 7px; height: 7px; background: var(--muted);
+  border-radius: 50%; animation: bounce 1.2s infinite;
+}
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+}
 
-  .btn-row { display: flex; gap: 10px; margin-top: 14px; }
+/* WELCOME */
+#welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+}
+#welcome h2 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+#welcome p { font-size: 13px; max-width: 340px; line-height: 1.6; }
 
-  .btn-primary {
-    flex: 1; padding: 11px 20px;
-    background: var(--accent); border: none;
-    border-radius: 8px; color: #fff;
-    font-size: 14px; font-weight: 700;
-    cursor: pointer; transition: opacity 0.15s;
-  }
-  .btn-primary:disabled {
-    background: var(--border); color: #555e75; cursor: not-allowed;
-  }
-  .btn-secondary {
-    padding: 11px 16px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 8px; color: var(--muted);
-    font-size: 14px; cursor: pointer;
-  }
+/* MODAL OVERLAY */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.overlay.show { display: flex; }
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+.modal label {
+  display: block; font-size: 11px; font-weight: 700;
+  color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.08em; margin-bottom: 6px; margin-top: 14px;
+}
+.modal label:first-of-type { margin-top: 0; }
+.modal select, .modal input[type="text"], .modal input[type="password"] {
+  width: 100%; padding: 9px 12px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 14px; outline: none;
+}
+.modal select:focus, .modal input:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 8px; margin-top: 18px; }
+.btn-save {
+  flex: 1; padding: 10px;
+  background: var(--accent); border: none;
+  border-radius: 8px; color: #fff;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.btn-cancel {
+  padding: 10px 16px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--muted);
+  font-size: 14px; cursor: pointer;
+}
+.api-note { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.api-note a { color: var(--accent2); }
 
-  /* RESULT */
-  .result-block {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 12px;
-  }
-  .result-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 11px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg3);
-  }
-  .result-label {
-    font-size: 11px; font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.08em;
-  }
-  .btn-copy {
-    padding: 5px 14px;
-    background: var(--border); border: none;
-    border-radius: 6px; color: var(--text);
-    font-size: 12px; font-weight: 700; cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-copy.copied {
-    background: var(--success); color: var(--success-text);
-  }
-  .result-text {
-    padding: 16px;
-    font-size: 14px; line-height: 1.75;
-    white-space: pre-wrap; color: var(--code);
-  }
+/* BANNER */
+#api-banner {
+  background: #78350f;
+  border-bottom: 1px solid #92400e;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #fde68a;
+  display: none;
+  cursor: pointer;
+}
+#api-banner.show { display: block; }
 
-  .proximos {
-    background: var(--tip);
-    border: 1px solid var(--tip-border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 13px; color: var(--muted);
-    line-height: 1.65; margin-bottom: 12px;
-  }
-  .proximos strong { color: var(--tip-border); }
-
-  .btn-copy-all {
-    width: 100%; padding: 10px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px; color: var(--muted);
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-copy-all.copied {
-    background: var(--success); color: var(--success-text);
-    border-color: var(--success);
-  }
-
-  .error-box {
-    background: #2d1515;
-    border: 1px solid #ef4444;
-    border-radius: 10px;
-    padding: 12px 16px;
-    color: #f87171; font-size: 14px;
-    margin-bottom: 14px;
-  }
-
-  #results { display: none; }
-  #results.show { display: block; }
-
-  @media (max-width: 480px) {
-    .row2, .row3 { grid-template-columns: 1fr; }
-  }
+/* STATUS */
+#status-bar {
+  font-size: 11px; color: var(--muted);
+  padding: 4px 12px 2px;
+  background: var(--bg);
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+}
+#btn-clear-chat {
+  font-size: 11px; color: var(--muted);
+  background: none; border: none; cursor: pointer;
+  padding: 0;
+}
+#btn-clear-chat:hover { color: var(--danger); }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">⚡</div>
-  <div>
-    <h1>2Com — Documentador de Atendimento</h1>
-    <p>Ação Interna + Ação Pública no padrão Movidesk</p>
-  </div>
-</header>
-
-<main>
-
-  <!-- API KEY BANNER -->
-  <div id="api-banner" class="show">
-    <p>
-      Insira sua chave de API da Anthropic para usar esta ferramenta.
-      Crie uma em <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.
+<!-- SETTINGS MODAL -->
+<div class="overlay" id="settings-overlay">
+  <div class="modal">
+    <h3>⚙️ Configurações</h3>
+    <label>Provedor de IA</label>
+    <select id="set-provider">
+      <option value="anthropic">Anthropic (Claude)</option>
+      <option value="openai">OpenAI (ChatGPT)</option>
+    </select>
+    <label>Modelo</label>
+    <select id="set-model">
+      <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (recomendado)</option>
+      <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (mais rápido)</option>
+      <option value="gpt-4o">GPT-4o</option>
+      <option value="gpt-4o-mini">GPT-4o mini (mais rápido)</option>
+    </select>
+    <label>Chave de API</label>
+    <input type="password" id="set-apikey" placeholder="sk-ant-... ou sk-...">
+    <p class="api-note">
+      Anthropic: <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> |
+      OpenAI: <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a><br>
       A chave fica salva apenas neste navegador.
     </p>
-    <div class="api-row">
-      <input type="text" id="api-key-input" placeholder="sk-ant-..." autocomplete="off">
-      <button onclick="saveApiKey()">Salvar</button>
+    <div class="modal-actions">
+      <button class="btn-save" onclick="saveSettings()">Salvar</button>
+      <button class="btn-cancel" onclick="closeSettings()">Cancelar</button>
     </div>
   </div>
+</div>
 
-  <!-- FORM -->
-  <div class="card">
-    <div class="row2">
-      <div>
-        <label>Canal</label>
-        <select id="canal">
-          <option value="ticket">🎫 Ticket Movidesk</option>
-          <option value="ticket_whatsapp">🎫💬 Ticket + WhatsApp</option>
-          <option value="chat">💬 Chat Movidesk</option>
-          <option value="whatsapp">📱 WhatsApp puro</option>
-        </select>
-      </div>
-      <div>
-        <label>Status</label>
-        <select id="status">
-          <option value="concluido">✅ Concluído</option>
-          <option value="parcial">⚠️ Parcial</option>
-          <option value="pendente">❗ Pendente</option>
-          <option value="andamento">🔄 Em andamento</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row3">
-      <div>
-        <label>Cliente</label>
-        <input type="text" id="cliente" placeholder="Nome do cliente">
-      </div>
-      <div>
-        <label>Ticket #</label>
-        <input type="text" id="ticket" placeholder="opcional">
-      </div>
-    </div>
-
-    <div class="field">
-      <label>
-        Relato do atendimento
-        <span class="hint">— o que aconteceu, o que foi feito, resultado</span>
-      </label>
-      <textarea id="relato" rows="6"
-        placeholder="Ex: Cliente reportou que IP 192.168.1.236 solicitado para COLETOR_24 já estava reservado para ADM-FL06 (MAC d0:67:e5:f4:99:d7, online). Não foi feita alteração. Cliente foi questionado se deseja substituir a reserva ou informar outro IP. Aguardando retorno."></textarea>
-      <div class="hint-text">Ctrl+Enter para gerar</div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn-primary" id="btn-gerar" onclick="generate()">✨ Gerar documentação</button>
-      <button class="btn-secondary" onclick="clearForm()">Limpar</button>
-    </div>
+<!-- HEADER -->
+<div id="header">
+  <div class="logo">⚡</div>
+  <div id="header-title">
+    2Com IA — Copiloto N2
+    <span>Assistente técnico de atendimento</span>
   </div>
+  <div id="model-badge" onclick="openSettings()">claude-sonnet-4-6</div>
+  <div id="btn-settings" onclick="openSettings()" title="Configurações">⚙️</div>
+</div>
 
-  <!-- ERROR -->
-  <div id="error-box" class="error-box" style="display:none"></div>
+<!-- API KEY BANNER -->
+<div id="api-banner" class="show" onclick="openSettings()">
+  ⚠️ Chave de API não configurada. Clique aqui para configurar e começar a usar.
+</div>
 
-  <!-- RESULTS -->
-  <div id="results">
-    <div class="result-block">
-      <div class="result-header">
-        <span class="result-label">🔒 Ação Interna</span>
-        <button class="btn-copy" id="btn-copy-interna" onclick="copyText('interna')">Copiar</button>
-      </div>
-      <div class="result-text" id="text-interna"></div>
-    </div>
+<!-- QUICK ACTIONS -->
+<div id="quick-actions">
+  <button class="qa-btn" onclick="quickAction('doc')">📋 Documentar atendimento</button>
+  <button class="qa-btn" onclick="quickAction('cliente')">💬 Mensagem pro cliente</button>
+  <button class="qa-btn" onclick="quickAction('diag')">🔍 Diagnosticar problema</button>
+  <button class="qa-btn" onclick="quickAction('pfsense')">🔥 pfSense — ajuda</button>
+  <button class="qa-btn" onclick="quickAction('linux')">🐧 Linux — ajuda</button>
+  <button class="qa-btn" onclick="quickAction('ad')">🪟 AD / Windows — ajuda</button>
+  <button class="qa-btn" onclick="quickAction('vpn')">🔒 VPN — configurar</button>
+  <button class="qa-btn" onclick="quickAction('dhcp')">📡 DHCP — reserva</button>
+</div>
 
-    <div class="result-block">
-      <div class="result-header">
-        <span class="result-label">💬 Ação Pública / Mensagem ao Cliente</span>
-        <button class="btn-copy" id="btn-copy-publica" onclick="copyText('publica')">Copiar</button>
-      </div>
-      <div class="result-text" id="text-publica"></div>
-    </div>
+<!-- STATUS BAR -->
+<div id="status-bar">
+  <span id="msg-count">0 mensagens</span>
+  <button id="btn-clear-chat" onclick="clearChat()" title="Limpar conversa">🗑 Nova conversa</button>
+</div>
 
-    <div id="proximos-box" class="proximos" style="display:none">
-      <strong>▶️ Próximos passos:</strong> <span id="text-proximos"></span>
-    </div>
-
-    <button class="btn-copy-all" id="btn-copy-all" onclick="copyAll()">📋 Copiar tudo junto</button>
+<!-- CHAT -->
+<div id="chat">
+  <div id="welcome">
+    <h2>👋 Olá, Igor!</h2>
+    <p>Seu copiloto de atendimento está pronto. Descreva o problema do cliente, mande uma foto da tela, ou use os botões rápidos acima.</p>
   </div>
+</div>
 
-</main>
+<!-- IMAGE PREVIEW -->
+<div id="img-preview-wrap">
+  <img id="img-preview" src="" alt="">
+  <span id="img-preview-name">imagem anexada</span>
+  <button id="btn-remove-img" onclick="removeImage()" title="Remover">✕</button>
+</div>
+
+<!-- INPUT -->
+<div id="input-area">
+  <input type="file" id="file-input" accept="image/*" onchange="handleImage(this)">
+  <button class="input-btn" onclick="document.getElementById('file-input').click()" title="Anexar foto">📎</button>
+  <button class="input-btn" id="btn-voice" onclick="toggleVoice()" title="Falar (microfone)">🎤</button>
+  <textarea
+    id="msg-input"
+    placeholder="Descreva o problema, o que foi feito, ou mande uma foto da tela... (ou clique no 🎤 para falar)"
+    rows="1"
+    onkeydown="handleKey(event)"
+    oninput="autoResize(this)"
+  ></textarea>
+  <button id="btn-send" onclick="send()" title="Enviar (Enter)">➤</button>
+</div>
 
 <script>
-const SYSTEM_PROMPT = `Você é um assistente especializado em documentação técnica de atendimentos de TI para a 2Com Consulting, empresa de MSP em Goiânia com ~1.100 clientes.
+// ==================== STATE ====================
+let messages = []; // {role, content (string or array), imageData, imageMime}
+let isLoading = false;
+let pendingImage = null; // {base64, mime, name, dataUrl}
 
-PADRÃO DE EMOJIS DA 2COM:
+// ==================== SYSTEM PROMPT ====================
+const SYSTEM = `Você é o copiloto técnico do Igor Rafhael, Analista de Infraestrutura N2 na 2Com Consulting, MSP baseado em Goiânia com ~1.100 clientes. Você o acompanha em tempo real durante os atendimentos.
+
+CONTEXTO DA 2COM:
+- Principal serviço: pfSense (210+ firewalls em produção)
+- Stack técnico: pfSense, Oracle Linux 7.9/8.10, Windows Server (AD/DNS/DHCP/GPO), Proxmox, VMware, Veeam, OpenVPN, IPsec, WinThor/Samba
+- Ticketing: Movidesk (suporte.2comconsulting.com.br)
+- Canais de atendimento: Ticket Movidesk, Chat Movidesk, WhatsApp, WhatsApp+Ticket
+- Comunicação interna: WhatsApp Business + Discord
+- VPN padrão: TCP4, TAP, vpn.oracledba.com.br:7227, LZO, TLS unchecked, IP 172.27.227.35
+- DNSBL do pfSense: desligado por padrão (ligar só se cliente pedir)
+- Servidores físicos: IPs fixos obrigatoriamente
+
+PADRÃO DE DOCUMENTAÇÃO MOVIDESK:
 🔵 Contexto / solicitação / informação recebida
 🟢 Validação realizada / ação concluída / sucesso
 ⭕ Impedimento / conflito encontrado
-⚠️ Atenção / risco técnico / cuidado
-▶️ Próxima ação a executar
-❗ Pendência / status aguardando retorno do cliente
+⚠️ Atenção / risco técnico
+▶️ Próxima ação
+❗ Pendência / aguardando retorno do cliente
 
-REGRAS:
-- Ação Interna: documentação técnica completa com todos os dados relevantes (IPs, MACs, hostnames, caminhos de menu, erros encontrados, o que foi verificado, o que foi alterado, resultado)
-- Ação Pública: mensagem ao cliente — objetiva, cordial, usando os emojis acima. Nunca expor dados internos como IPs de gerência, senhas, hostnames internos, detalhes de configuração sensível
-- Se status = Pendente ou Parcial, incluir ❗ na ação interna com o que está aguardando
-- Idioma: português brasileiro, tom profissional mas direto
-- Não invente dados que não foram informados
+Ação Interna: documentação técnica completa (IPs, MACs, hostnames, caminhos de menu, erros, o que foi verificado, o que foi alterado, resultado).
+Ação Pública: mensagem ao cliente — objetiva, cordial, sem dados internos (sem IPs de gerência, senhas, hostnames internos).
 
-Responda APENAS em JSON válido, sem markdown, no formato exato:
-{"acao_interna": "...", "acao_publica": "...", "proximos_passos": "..."}
-proximos_passos só inclua se houver pendência real, senão coloque null.`;
+PROCEDIMENTOS CRÍTICOS:
+- Antes de alterar qualquer firewall: confirmar cliente, unidade, hostname, IP e rede da interface LAN
+- Empresas com múltiplas unidades têm múltiplos firewalls com redes diferentes
+- Verificar Status > DHCP Leases antes de criar reserva (IP pode estar em uso)
+- Nunca substituir reserva DHCP ativa sem confirmação explícita do cliente
+- Para proxy Squid: abrir Real Time (filtrar por IP da estação) antes de alterar regras
+- Sempre copiar/colar domínios, nunca digitar manualmente
+- Config History > Diff para identificar e reverter alterações pontuais
 
-const CANAL_LABELS = {
-  ticket: "Ticket Movidesk",
-  ticket_whatsapp: "Ticket + WhatsApp",
-  chat: "Chat Movidesk",
-  whatsapp: "WhatsApp puro"
-};
+DIAGNÓSTICO (nesta ordem):
+1. Isolate rede: funciona no 4G? Se sim, problema interno (firewall/proxy)
+2. Isolate máquina: outras máquinas com mesmo problema? Se sim, é rede/firewall
+3. Isolate DNS: nslookup dominio 8.8.8.8 vs DNS interno
+4. Isolate proxy: Squid > Real Time > filtrar IP da estação > pedir usuário reproduzir erro
+5. Isolate porta: Test-NetConnection dominio -Port 443
 
-const STATUS_LABELS = {
-  concluido: "Concluído",
-  parcial: "Parcial",
-  pendente: "Pendente",
-  andamento: "Em andamento"
-};
+MENSAGENS WHATSAPP AO CLIENTE:
+- Curtas, diretas, profissionais
+- Usar emojis do padrão 2Com quando relevante
+- Nunca expor dados técnicos internos
 
-let result = null;
+Responda sempre em português brasileiro. Seja direto e técnico quando necessário. Quando receber uma foto, analise e dê orientação técnica específica sobre o que está vendo.`;
 
-// API KEY
-function getApiKey() { return localStorage.getItem('2com_api_key') || ''; }
+// ==================== SETTINGS ====================
+function getSettings() {
+  return {
+    provider: localStorage.getItem('2com_provider') || 'anthropic',
+    model: localStorage.getItem('2com_model') || 'claude-sonnet-4-6',
+    apikey: localStorage.getItem('2com_apikey') || ''
+  };
+}
 
-function saveApiKey() {
-  const key = document.getElementById('api-key-input').value.trim();
-  if (!key) return;
-  localStorage.setItem('2com_api_key', key);
-  document.getElementById('api-banner').classList.remove('show');
+function openSettings() {
+  const s = getSettings();
+  document.getElementById('set-provider').value = s.provider;
+  document.getElementById('set-model').value = s.model;
+  document.getElementById('set-apikey').value = s.apikey;
+  document.getElementById('settings-overlay').classList.add('show');
+}
+
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('show');
+}
+
+function saveSettings() {
+  const provider = document.getElementById('set-provider').value;
+  const model = document.getElementById('set-model').value;
+  const apikey = document.getElementById('set-apikey').value.trim();
+  localStorage.setItem('2com_provider', provider);
+  localStorage.setItem('2com_model', model);
+  localStorage.setItem('2com_apikey', apikey);
+  updateModelBadge();
+  checkApiKey();
+  closeSettings();
+}
+
+function updateModelBadge() {
+  const s = getSettings();
+  document.getElementById('model-badge').textContent = s.model;
 }
 
 function checkApiKey() {
-  const key = getApiKey();
-  if (!key) {
-    document.getElementById('api-banner').classList.add('show');
-    return false;
+  const s = getSettings();
+  const banner = document.getElementById('api-banner');
+  if (!s.apikey) {
+    banner.classList.add('show');
+  } else {
+    banner.classList.remove('show');
   }
-  document.getElementById('api-banner').classList.remove('show');
-  return true;
 }
 
-// KEYBOARD SHORTCUT
-document.addEventListener('keydown', (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generate();
-});
+// ==================== IMAGE ====================
+function handleImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    const base64 = dataUrl.split(',')[1];
+    const mime = file.type;
+    pendingImage = { base64, mime, name: file.name, dataUrl };
+    document.getElementById('img-preview').src = dataUrl;
+    document.getElementById('img-preview-name').textContent = file.name;
+    document.getElementById('img-preview-wrap').classList.add('show');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
 
-// GENERATE
-async function generate() {
-  if (!checkApiKey()) return;
+function removeImage() {
+  pendingImage = null;
+  document.getElementById('img-preview-wrap').classList.remove('show');
+}
 
-  const relato = document.getElementById('relato').value.trim();
-  if (!relato) return;
+// ==================== QUICK ACTIONS ====================
+const QA = {
+  doc: 'Preciso documentar um atendimento. Vou descrever o que aconteceu e preciso da Ação Interna e Ação Pública no padrão Movidesk da 2Com.',
+  cliente: 'Preciso de uma mensagem para enviar ao cliente. Vou descrever a situação e preciso de uma mensagem clara e profissional.',
+  diag: 'Tenho um problema para diagnosticar. Vou descrever o sintoma — me ajude a identificar a causa e os passos para resolver.',
+  pfsense: 'Preciso de ajuda com o pfSense. Qual é o procedimento correto?',
+  linux: 'Preciso de ajuda com Oracle Linux. Qual é o procedimento correto?',
+  ad: 'Preciso de ajuda com Active Directory / Windows Server. Qual é o procedimento correto?',
+  vpn: 'Preciso configurar uma VPN para um usuário/cliente. Me guie no processo correto.',
+  dhcp: 'Preciso criar ou verificar uma reserva DHCP no pfSense. Me guie no processo.'
+};
 
-  const btn = document.getElementById('btn-gerar');
-  btn.disabled = true;
-  btn.textContent = '⏳ Gerando...';
-  document.getElementById('error-box').style.display = 'none';
-  document.getElementById('results').classList.remove('show');
+function quickAction(type) {
+  document.getElementById('msg-input').value = QA[type];
+  autoResize(document.getElementById('msg-input'));
+  document.getElementById('msg-input').focus();
+}
 
-  const canal = document.getElementById('canal').value;
-  const status = document.getElementById('status').value;
-  const cliente = document.getElementById('cliente').value.trim();
-  const ticket = document.getElementById('ticket').value.trim();
+// ==================== SEND ====================
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    send();
+  }
+}
 
-  const userMsg = [
-    `Canal: ${CANAL_LABELS[canal]}`,
-    `Cliente: ${cliente || 'não informado'}`,
-    ticket ? `Ticket #${ticket}` : null,
-    `Status: ${STATUS_LABELS[status]}`,
-    '',
-    'Relato do atendimento:',
-    relato
-  ].filter(Boolean).join('\n');
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+async function send() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text && !pendingImage) return;
+  if (isLoading) return;
+
+  const s = getSettings();
+  if (!s.apikey) { openSettings(); return; }
+
+  // Hide welcome
+  const welcome = document.getElementById('welcome');
+  if (welcome) welcome.remove();
+
+  // Build user message
+  const userMsg = { role: 'user' };
+  if (pendingImage) {
+    userMsg.imageData = pendingImage.base64;
+    userMsg.imageMime = pendingImage.mime;
+    userMsg.imageDataUrl = pendingImage.dataUrl;
+  }
+  userMsg.text = text;
+  messages.push(userMsg);
+  renderMessage(userMsg, true);
+
+  // Clear input
+  input.value = '';
+  autoResize(input);
+  removeImage();
+
+  // Typing indicator
+  isLoading = true;
+  document.getElementById('btn-send').disabled = true;
+  const typingEl = addTyping();
+  scrollChat();
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': getApiKey(),
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: userMsg }]
-      })
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error?.message || `Erro ${res.status}`);
-    }
-
-    const data = await res.json();
-    const raw = data.content?.[0]?.text || '';
-    const clean = raw.replace(/```json|```/g, '').trim();
-    result = JSON.parse(clean);
-
-    document.getElementById('text-interna').textContent = result.acao_interna;
-    document.getElementById('text-publica').textContent = result.acao_publica;
-
-    if (result.proximos_passos) {
-      document.getElementById('text-proximos').textContent = result.proximos_passos;
-      document.getElementById('proximos-box').style.display = 'block';
+    let reply;
+    if (s.provider === 'anthropic') {
+      reply = await callAnthropic(s.model, s.apikey);
     } else {
-      document.getElementById('proximos-box').style.display = 'none';
+      reply = await callOpenAI(s.model, s.apikey);
     }
-
-    document.getElementById('results').classList.add('show');
-    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  } catch (e) {
-    const box = document.getElementById('error-box');
-    box.textContent = '⚠️ ' + (e.message || 'Erro ao gerar. Verifique a chave de API e tente novamente.');
-    box.style.display = 'block';
+    removeTyping(typingEl);
+    const aiMsg = { role: 'assistant', text: reply };
+    messages.push(aiMsg);
+    renderMessage(aiMsg, true);
+    updateStatus();
+  } catch (err) {
+    removeTyping(typingEl);
+    const errMsg = { role: 'assistant', text: '⚠️ Erro: ' + (err.message || 'Falha na requisição. Verifique a chave de API.') };
+    renderMessage(errMsg, true);
   } finally {
-    btn.disabled = false;
-    btn.textContent = '✨ Gerar documentação';
+    isLoading = false;
+    document.getElementById('btn-send').disabled = false;
+    scrollChat();
   }
 }
 
-// COPY
-function copyText(which) {
-  const text = which === 'interna'
-    ? document.getElementById('text-interna').textContent
-    : document.getElementById('text-publica').textContent;
-
-  navigator.clipboard.writeText(text);
-  const btn = document.getElementById(`btn-copy-${which}`);
-  btn.textContent = '✓ Copiado!';
-  btn.classList.add('copied');
-  setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+// ==================== API CALLS ====================
+async function buildAnthropicMessages() {
+  return messages.map(m => {
+    if (m.role === 'assistant') {
+      return { role: 'assistant', content: m.text };
+    }
+    const content = [];
+    if (m.imageData) {
+      content.push({ type: 'image', source: { type: 'base64', media_type: m.imageMime, data: m.imageData } });
+    }
+    if (m.text) {
+      content.push({ type: 'text', text: m.text });
+    }
+    return { role: 'user', content: content.length === 1 && !m.imageData ? m.text : content };
+  });
 }
 
-function copyAll() {
-  if (!result) return;
-  const parts = [
-    '=== AÇÃO INTERNA ===',
-    result.acao_interna,
-    '',
-    '=== AÇÃO PÚBLICA ===',
-    result.acao_publica
-  ];
-  if (result.proximos_passos) {
-    parts.push('', '=== PRÓXIMOS PASSOS ===', result.proximos_passos);
+async function callAnthropic(model, apikey) {
+  const msgs = await buildAnthropicMessages();
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apikey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 1500,
+      system: SYSTEM,
+      messages: msgs
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || `Erro ${res.status}`);
   }
-  navigator.clipboard.writeText(parts.join('\n'));
-  const btn = document.getElementById('btn-copy-all');
-  btn.textContent = '✓ Tudo copiado!';
-  btn.classList.add('copied');
-  setTimeout(() => { btn.textContent = '📋 Copiar tudo junto'; btn.classList.remove('copied'); }, 2000);
+  const data = await res.json();
+  return data.content?.[0]?.text || '';
 }
 
-function clearForm() {
-  document.getElementById('cliente').value = '';
-  document.getElementById('ticket').value = '';
-  document.getElementById('relato').value = '';
-  document.getElementById('canal').value = 'ticket';
-  document.getElementById('status').value = 'concluido';
-  document.getElementById('results').classList.remove('show');
-  document.getElementById('error-box').style.display = 'none';
-  result = null;
+async function buildOpenAIMessages() {
+  const result = [{ role: 'system', content: SYSTEM }];
+  for (const m of messages) {
+    if (m.role === 'assistant') {
+      result.push({ role: 'assistant', content: m.text });
+    } else {
+      const content = [];
+      if (m.text) content.push({ type: 'text', text: m.text });
+      if (m.imageData) {
+        content.push({ type: 'image_url', image_url: { url: `data:${m.imageMime};base64,${m.imageData}` } });
+      }
+      result.push({ role: 'user', content: content.length === 1 && !m.imageData ? m.text : content });
+    }
+  }
+  return result;
 }
 
-// INIT
+async function callOpenAI(model, apikey) {
+  const msgs = await buildOpenAIMessages();
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apikey}`
+    },
+    body: JSON.stringify({ model, max_tokens: 1500, messages: msgs })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || `Erro ${res.status}`);
+  }
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+// ==================== RENDER ====================
+function renderMessage(msg, scroll) {
+  const chat = document.getElementById('chat');
+  const div = document.createElement('div');
+  div.className = `msg ${msg.role === 'user' ? 'user' : 'ai'}`;
+
+  const roleEl = document.createElement('div');
+  roleEl.className = 'msg-role';
+  roleEl.textContent = msg.role === 'user' ? 'Você' : '⚡ 2Com IA';
+  div.appendChild(roleEl);
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+
+  if (msg.imageDataUrl) {
+    const img = document.createElement('img');
+    img.src = msg.imageDataUrl;
+    img.className = 'msg-image';
+    bubble.appendChild(img);
+  }
+
+  if (msg.text) {
+    bubble.innerHTML += renderMarkdown(msg.text);
+  }
+
+  div.appendChild(bubble);
+
+  // Copy button
+  const actions = document.createElement('div');
+  actions.className = 'msg-actions';
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'msg-copy';
+  copyBtn.textContent = 'Copiar';
+  copyBtn.onclick = () => {
+    navigator.clipboard.writeText(msg.text || '');
+    copyBtn.textContent = '✓ Copiado';
+    copyBtn.classList.add('ok');
+    setTimeout(() => { copyBtn.textContent = 'Copiar'; copyBtn.classList.remove('ok'); }, 2000);
+  };
+  actions.appendChild(copyBtn);
+  div.appendChild(actions);
+
+  chat.appendChild(div);
+  if (scroll) scrollChat();
+  updateStatus();
+}
+
+function renderMarkdown(text) {
+  // Code blocks
+  text = text.replace(/```[\w]*\n?([\s\S]*?)```/g, (_, code) => `<pre>${escHtml(code.trim())}</pre>`);
+  // Inline code
+  text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${escHtml(c)}</code>`);
+  // Bold
+  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Line breaks
+  text = text.replace(/\n/g, '<br>');
+  return text;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function addTyping() {
+  const chat = document.getElementById('chat');
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  div.id = 'typing-indicator';
+  const roleEl = document.createElement('div');
+  roleEl.className = 'msg-role';
+  roleEl.textContent = '⚡ 2Com IA';
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  div.appendChild(roleEl);
+  div.appendChild(bubble);
+  chat.appendChild(div);
+  scrollChat();
+  return div;
+}
+
+function removeTyping(el) {
+  if (el && el.parentNode) el.parentNode.removeChild(el);
+}
+
+function scrollChat() {
+  const chat = document.getElementById('chat');
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function updateStatus() {
+  const userMsgs = messages.filter(m => m.role === 'user').length;
+  document.getElementById('msg-count').textContent = `${messages.length} mensagens`;
+}
+
+function clearChat() {
+  if (messages.length === 0) return;
+  if (!confirm('Limpar toda a conversa?')) return;
+  messages = [];
+  const chat = document.getElementById('chat');
+  chat.innerHTML = `<div id="welcome" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;color:var(--muted)"><h2 style="font-size:18px;color:var(--text);margin-bottom:8px">👋 Nova conversa!</h2><p style="font-size:13px;max-width:340px;line-height:1.6">Descreva o problema do cliente, mande uma foto da tela, ou use os botões rápidos acima.</p></div>`;
+  updateStatus();
+}
+
+// ==================== VOICE ====================
+let recognition = null;
+let isListening = false;
+
+function toggleVoice() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Reconhecimento de voz não suportado neste browser. Use Google Chrome.');
+    return;
+  }
+  if (isListening) {
+    stopVoice();
+  } else {
+    startVoice();
+  }
+}
+
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'pt-BR';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  let finalTranscript = '';
+  const existingText = document.getElementById('msg-input').value;
+
+  recognition.onstart = () => {
+    isListening = true;
+    const btn = document.getElementById('btn-voice');
+    btn.textContent = '🔴';
+    btn.style.borderColor = '#ef4444';
+    btn.style.color = '#ef4444';
+    btn.title = 'Parar gravação';
+  };
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    finalTranscript = '';
+    for (let i = 0; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        finalTranscript += e.results[i][0].transcript;
+      } else {
+        interim += e.results[i][0].transcript;
+      }
+    }
+    const input = document.getElementById('msg-input');
+    input.value = (existingText ? existingText + ' ' : '') + finalTranscript + interim;
+    autoResize(input);
+  };
+
+  recognition.onerror = (e) => {
+    stopVoice();
+    if (e.error !== 'no-speech') {
+      alert('Erro no microfone: ' + e.error);
+    }
+  };
+
+  recognition.onend = () => {
+    if (isListening) {
+      // Auto-send if we got final transcript
+      const input = document.getElementById('msg-input');
+      if (input.value.trim()) {
+        stopVoice();
+        // Small delay then send
+        setTimeout(() => send(), 300);
+      } else {
+        stopVoice();
+      }
+    }
+  };
+
+  recognition.start();
+}
+
+function stopVoice() {
+  isListening = false;
+  if (recognition) {
+    recognition.stop();
+    recognition = null;
+  }
+  const btn = document.getElementById('btn-voice');
+  btn.textContent = '🎤';
+  btn.style.borderColor = '';
+  btn.style.color = '';
+  btn.title = 'Falar (microfone)';
+}
+
+// ==================== INIT ====================
+updateModelBadge();
 checkApiKey();
+updateStatus();
+
+// Close modal on overlay click
+document.getElementById('settings-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeSettings();
+});
 </script>
 </body>
 </html>
