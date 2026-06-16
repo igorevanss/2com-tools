@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2Com — Documentador de Atendimento</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #1a1d27;
+    --bg3: #22263a;
+    --border: #2e3248;
+    --text: #e8eaf6;
+    --muted: #8b90b8;
+    --accent: #3b82f6;
+    --code: #c9d1d9;
+    --success: #14532d;
+    --success-text: #4ade80;
+    --tip: #1e2235;
+    --tip-border: #5c6ef8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .logo {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  header h1 { font-size: 15px; font-weight: 700; }
+  header p { color: var(--muted); font-size: 12px; }
+
+  /* MAIN */
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px; }
+
+  /* API KEY BANNER */
+  #api-banner {
+    background: var(--tip);
+    border: 1px solid var(--tip-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  #api-banner.show { display: block; }
+  #api-banner p { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  #api-banner a { color: var(--tip-border); }
+  .api-row { display: flex; gap: 8px; }
+  .api-row input {
+    flex: 1; padding: 9px 12px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-size: 14px;
+  }
+  .api-row button {
+    padding: 9px 16px;
+    background: var(--tip-border); border: none;
+    border-radius: 8px; color: #fff;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  label .hint {
+    font-size: 11px;
+    font-weight: 400;
+    color: #555e75;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 6px;
+  }
+
+  select, input[type="text"], textarea {
+    width: 100%;
+    padding: 9px 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  select:focus, input:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  textarea { resize: vertical; line-height: 1.65; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .row3 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .field { margin-bottom: 12px; }
+
+  .hint-text {
+    font-size: 11px; color: #555e75; margin-top: 5px;
+  }
+
+  .btn-row { display: flex; gap: 10px; margin-top: 14px; }
+
+  .btn-primary {
+    flex: 1; padding: 11px 20px;
+    background: var(--accent); border: none;
+    border-radius: 8px; color: #fff;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .btn-primary:disabled {
+    background: var(--border); color: #555e75; cursor: not-allowed;
+  }
+  .btn-secondary {
+    padding: 11px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px; color: var(--muted);
+    font-size: 14px; cursor: pointer;
+  }
+
+  /* RESULT */
+  .result-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .result-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  .result-label {
+    font-size: 11px; font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .btn-copy {
+    padding: 5px 14px;
+    background: var(--border); border: none;
+    border-radius: 6px; color: var(--text);
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-copy.copied {
+    background: var(--success); color: var(--success-text);
+  }
+  .result-text {
+    padding: 16px;
+    font-size: 14px; line-height: 1.75;
+    white-space: pre-wrap; color: var(--code);
+  }
+
+  .proximos {
+    background: var(--tip);
+    border: 1px solid var(--tip-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px; color: var(--muted);
+    line-height: 1.65; margin-bottom: 12px;
+  }
+  .proximos strong { color: var(--tip-border); }
+
+  .btn-copy-all {
+    width: 100%; padding: 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px; color: var(--muted);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-copy-all.copied {
+    background: var(--success); color: var(--success-text);
+    border-color: var(--success);
+  }
+
+  .error-box {
+    background: #2d1515;
+    border: 1px solid #ef4444;
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #f87171; font-size: 14px;
+    margin-bottom: 14px;
+  }
+
+  #results { display: none; }
+  #results.show { display: block; }
+
+  @media (max-width: 480px) {
+    .row2, .row3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⚡</div>
+  <div>
+    <h1>2Com — Documentador de Atendimento</h1>
+    <p>Ação Interna + Ação Pública no padrão Movidesk</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- API KEY BANNER -->
+  <div id="api-banner" class="show">
+    <p>
+      Insira sua chave de API da Anthropic para usar esta ferramenta.
+      Crie uma em <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.
+      A chave fica salva apenas neste navegador.
+    </p>
+    <div class="api-row">
+      <input type="text" id="api-key-input" placeholder="sk-ant-..." autocomplete="off">
+      <button onclick="saveApiKey()">Salvar</button>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="card">
+    <div class="row2">
+      <div>
+        <label>Canal</label>
+        <select id="canal">
+          <option value="ticket">🎫 Ticket Movidesk</option>
+          <option value="ticket_whatsapp">🎫💬 Ticket + WhatsApp</option>
+          <option value="chat">💬 Chat Movidesk</option>
+          <option value="whatsapp">📱 WhatsApp puro</option>
+        </select>
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="status">
+          <option value="concluido">✅ Concluído</option>
+          <option value="parcial">⚠️ Parcial</option>
+          <option value="pendente">❗ Pendente</option>
+          <option value="andamento">🔄 Em andamento</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row3">
+      <div>
+        <label>Cliente</label>
+        <input type="text" id="cliente" placeholder="Nome do cliente">
+      </div>
+      <div>
+        <label>Ticket #</label>
+        <input type="text" id="ticket" placeholder="opcional">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>
+        Relato do atendimento
+        <span class="hint">— o que aconteceu, o que foi feito, resultado</span>
+      </label>
+      <textarea id="relato" rows="6"
+        placeholder="Ex: Cliente reportou que IP 192.168.1.236 solicitado para COLETOR_24 já estava reservado para ADM-FL06 (MAC d0:67:e5:f4:99:d7, online). Não foi feita alteração. Cliente foi questionado se deseja substituir a reserva ou informar outro IP. Aguardando retorno."></textarea>
+      <div class="hint-text">Ctrl+Enter para gerar</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="btn-gerar" onclick="generate()">✨ Gerar documentação</button>
+      <button class="btn-secondary" onclick="clearForm()">Limpar</button>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div id="error-box" class="error-box" style="display:none"></div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="result-block">
+      <div class="result-header">
+        <span class="result-label">🔒 Ação Interna</span>
+        <button class="btn-copy" id="btn-copy-interna" onclick="copyText('interna')">Copiar</button>
+      </div>
+      <div class="result-text" id="text-interna"></div>
+    </div>
+
+    <div class="result-block">
+      <div class="result-header">
+        <span class="result-label">💬 Ação Pública / Mensagem ao Cliente</span>
+        <button class="btn-copy" id="btn-copy-publica" onclick="copyText('publica')">Copiar</button>
+      </div>
+      <div class="result-text" id="text-publica"></div>
+    </div>
+
+    <div id="proximos-box" class="proximos" style="display:none">
+      <strong>▶️ Próximos passos:</strong> <span id="text-proximos"></span>
+    </div>
+
+    <button class="btn-copy-all" id="btn-copy-all" onclick="copyAll()">📋 Copiar tudo junto</button>
+  </div>
+
+</main>
+
+<script>
+const SYSTEM_PROMPT = `Você é um assistente especializado em documentação técnica de atendimentos de TI para a 2Com Consulting, empresa de MSP em Goiânia com ~1.100 clientes.
+
+PADRÃO DE EMOJIS DA 2COM:
+🔵 Contexto / solicitação / informação recebida
+🟢 Validação realizada / ação concluída / sucesso
+⭕ Impedimento / conflito encontrado
+⚠️ Atenção / risco técnico / cuidado
+▶️ Próxima ação a executar
+❗ Pendência / status aguardando retorno do cliente
+
+REGRAS:
+- Ação Interna: documentação técnica completa com todos os dados relevantes (IPs, MACs, hostnames, caminhos de menu, erros encontrados, o que foi verificado, o que foi alterado, resultado)
+- Ação Pública: mensagem ao cliente — objetiva, cordial, usando os emojis acima. Nunca expor dados internos como IPs de gerência, senhas, hostnames internos, detalhes de configuração sensível
+- Se status = Pendente ou Parcial, incluir ❗ na ação interna com o que está aguardando
+- Idioma: português brasileiro, tom profissional mas direto
+- Não invente dados que não foram informados
+
+Responda APENAS em JSON válido, sem markdown, no formato exato:
+{"acao_interna": "...", "acao_publica": "...", "proximos_passos": "..."}
+proximos_passos só inclua se houver pendência real, senão coloque null.`;
+
+const CANAL_LABELS = {
+  ticket: "Ticket Movidesk",
+  ticket_whatsapp: "Ticket + WhatsApp",
+  chat: "Chat Movidesk",
+  whatsapp: "WhatsApp puro"
+};
+
+const STATUS_LABELS = {
+  concluido: "Concluído",
+  parcial: "Parcial",
+  pendente: "Pendente",
+  andamento: "Em andamento"
+};
+
+let result = null;
+
+// API KEY
+function getApiKey() { return localStorage.getItem('2com_api_key') || ''; }
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key) return;
+  localStorage.setItem('2com_api_key', key);
+  document.getElementById('api-banner').classList.remove('show');
+}
+
+function checkApiKey() {
+  const key = getApiKey();
+  if (!key) {
+    document.getElementById('api-banner').classList.add('show');
+    return false;
+  }
+  document.getElementById('api-banner').classList.remove('show');
+  return true;
+}
+
+// KEYBOARD SHORTCUT
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generate();
+});
+
+// GENERATE
+async function generate() {
+  if (!checkApiKey()) return;
+
+  const relato = document.getElementById('relato').value.trim();
+  if (!relato) return;
+
+  const btn = document.getElementById('btn-gerar');
+  btn.disabled = true;
+  btn.textContent = '⏳ Gerando...';
+  document.getElementById('error-box').style.display = 'none';
+  document.getElementById('results').classList.remove('show');
+
+  const canal = document.getElementById('canal').value;
+  const status = document.getElementById('status').value;
+  const cliente = document.getElementById('cliente').value.trim();
+  const ticket = document.getElementById('ticket').value.trim();
+
+  const userMsg = [
+    `Canal: ${CANAL_LABELS[canal]}`,
+    `Cliente: ${cliente || 'não informado'}`,
+    ticket ? `Ticket #${ticket}` : null,
+    `Status: ${STATUS_LABELS[status]}`,
+    '',
+    'Relato do atendimento:',
+    relato
+  ].filter(Boolean).join('\n');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': getApiKey(),
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: userMsg }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `Erro ${res.status}`);
+    }
+
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    const clean = raw.replace(/```json|```/g, '').trim();
+    result = JSON.parse(clean);
+
+    document.getElementById('text-interna').textContent = result.acao_interna;
+    document.getElementById('text-publica').textContent = result.acao_publica;
+
+    if (result.proximos_passos) {
+      document.getElementById('text-proximos').textContent = result.proximos_passos;
+      document.getElementById('proximos-box').style.display = 'block';
+    } else {
+      document.getElementById('proximos-box').style.display = 'none';
+    }
+
+    document.getElementById('results').classList.add('show');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (e) {
+    const box = document.getElementById('error-box');
+    box.textContent = '⚠️ ' + (e.message || 'Erro ao gerar. Verifique a chave de API e tente novamente.');
+    box.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ Gerar documentação';
+  }
+}
+
+// COPY
+function copyText(which) {
+  const text = which === 'interna'
+    ? document.getElementById('text-interna').textContent
+    : document.getElementById('text-publica').textContent;
+
+  navigator.clipboard.writeText(text);
+  const btn = document.getElementById(`btn-copy-${which}`);
+  btn.textContent = '✓ Copiado!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+}
+
+function copyAll() {
+  if (!result) return;
+  const parts = [
+    '=== AÇÃO INTERNA ===',
+    result.acao_interna,
+    '',
+    '=== AÇÃO PÚBLICA ===',
+    result.acao_publica
+  ];
+  if (result.proximos_passos) {
+    parts.push('', '=== PRÓXIMOS PASSOS ===', result.proximos_passos);
+  }
+  navigator.clipboard.writeText(parts.join('\n'));
+  const btn = document.getElementById('btn-copy-all');
+  btn.textContent = '✓ Tudo copiado!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = '📋 Copiar tudo junto'; btn.classList.remove('copied'); }, 2000);
+}
+
+function clearForm() {
+  document.getElementById('cliente').value = '';
+  document.getElementById('ticket').value = '';
+  document.getElementById('relato').value = '';
+  document.getElementById('canal').value = 'ticket';
+  document.getElementById('status').value = 'concluido';
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('error-box').style.display = 'none';
+  result = null;
+}
+
+// INIT
+checkApiKey();
+</script>
+</body>
+</html>
